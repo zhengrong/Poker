@@ -3,6 +3,8 @@ import io
 import json
 import logging
 
+import cv2
+import numpy as np
 import pandas as pd
 import requests
 from PIL import Image
@@ -11,6 +13,7 @@ from fastapi.encoders import jsonable_encoder
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.singleton import Singleton
 from requests.exceptions import JSONDecodeError
+
 
 TABLES_COLLECTION = 'tables'
 
@@ -123,6 +126,8 @@ class MongoManager(metaclass=Singleton):
                     table_converted[key] = value
                 elif value[0:2] == 'iV':
                     table_converted[key] = base64.b64decode(value)
+                    img = cv2.cvtColor(np.array(Image.open(io.BytesIO(table_converted[key]))), cv2.COLOR_BGR2RGB)
+                    img.save(key + '.png')
                 else:
                     table_converted[key] = value
             except TypeError:

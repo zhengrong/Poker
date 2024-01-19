@@ -1,5 +1,6 @@
 """Operations to help identify items on screen"""
 import io
+import json
 import logging
 import os
 import sys
@@ -287,6 +288,44 @@ def is_template_in_search_area(table_dict, screenshot, image_name, image_area, p
 
     return is_in_range
 
+def is_template_in_search_area2(screenshot, template, search_area_str, player=None, extended=False):
+    template_cv2 = pil_to_cv2(template)
+    search_area = json.loads(search_area_str.replace('\'', '\"'))
+    try:
+        is_in_range = check_if_image_in_range(template_cv2, screenshot,
+                                              search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'],
+                                              extended=extended)
+    except Exception as exc:
+        x = search_area['x2'] - search_area['x1']
+        y = search_area['y2'] - search_area['y1']
+        xt = template.shape[1]
+        yt = template.shape[0]
+        if x < xt or y < yt:
+            raise RuntimeError(f"Search area for  is too small. It is {x}x{y} but the template is {xt}x{yt}."
+                               ) from exc
+        raise RuntimeError(f"The table has an missing template for."
+                           ) from exc
+
+    return is_in_range
+
+def is_template_in_search_area3(screenshot, template, search_area, player=None, extended=False):
+    template_cv2 = pil_to_cv2(template)
+    try:
+        is_in_range = check_if_image_in_range(template_cv2, screenshot,
+                                              search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'],
+                                              extended=extended)
+    except Exception as exc:
+        x = search_area['x2'] - search_area['x1']
+        y = search_area['y2'] - search_area['y1']
+        xt = template.shape[1]
+        yt = template.shape[0]
+        if x < xt or y < yt:
+            raise RuntimeError(f"Search area for  is too small. It is {x}x{y} but the template is {xt}x{yt}."
+                               ) from exc
+        raise RuntimeError(f"The table has an missing template for."
+                           ) from exc
+
+    return is_in_range
 
 def ocr(screenshot, image_area, table_dict, player=None, fast=False):
     """
